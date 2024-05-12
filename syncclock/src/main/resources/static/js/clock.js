@@ -1,7 +1,13 @@
-window.onload = () => {
+window.onload = async () => {
     // Browser <-> WAS 간 통신 속도를 담는 변수
-    let averageTime = averageReqResTime();
-    let dbTime = dbReqResTime();
+    let averageTimePromise = averageReqResTime();
+    let dbTimePromise = dbReqResTime();
+    //Promise 객체에서 Result값 추출
+    let [averageTime, dbTime] = await Promise.all([averageTimePromise, dbTimePromise]);
+
+    console.log(averageTime);
+    console.log(dbTime);
+    showClock(averageTime, dbTime);
 };
 
 async function averageReqResTime() {
@@ -30,7 +36,7 @@ async function averageReqResTime() {
             let timeDifference = null;
             let averageRequestTime = resTimeArray.reduce((acc, item)=>acc+item, 0)/9;
             console.log("averageRequestTime = " + averageRequestTime);
-
+            return averageRequestTime;
         }
     }
 }
@@ -41,5 +47,41 @@ async function dbReqResTime(){
         body: JSON.stringify({}),
     });
     let data = await response.json();
+    return data;
     console.log("was data: " + data);
+}
+
+//시계 출력
+function showClock(averageTime, dbTime){
+
+    console.log(averageTime);
+    console.log(dbTime);
+
+    let browser = new Date().getTime();
+    let newBrowserTime = browser+averageTime+dbTime;
+    console.log(newBrowserTime);
+    //1초마다 반복
+    setInterval(() => {
+        // milliseconds -> Date 객체로 변환
+        let newDate = new Date(newBrowserTime);
+
+        console.log("새 브라우저 시간:" + newDate);
+        console.log("시간:" + newDate.getHours());
+        console.log("시간:" + newDate.getMinutes());
+        console.log("시간:" + newDate.getSeconds());
+
+        // Date 객체에서 시간,분,초 데이터 추출  후 포맷
+        let hours = newDate.getHours();
+        let minutes = newDate.getMinutes();
+        let seconds = newDate.getSeconds();
+
+        let formattedTime = hours + ':' + minutes + ':' + seconds;
+
+        console.log(formattedTime);
+        // innerHTML
+        document.getElementById('clock').innerHTML = formattedTime;
+
+        // 반복 될 때마다 1초씩 더하기
+        newBrowserTime += 1000;
+    }, 1000);
 }
