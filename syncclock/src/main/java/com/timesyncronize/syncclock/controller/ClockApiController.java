@@ -4,6 +4,8 @@ import com.timesyncronize.syncclock.service.ClockApiService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
+import java.text.ParseException;
+
 @RestController
 @RequestMapping("/clockRest")
 @RequiredArgsConstructor
@@ -17,7 +19,7 @@ public class ClockApiController {
     }
 
     @PostMapping("/dbNow")
-    public Long timeDifferenceDB(){
+    public Long timeDifferenceDB() throws ParseException {
         return clockApiService.timeDifferenceDB();
     }
 }
