@@ -1,19 +1,14 @@
 package com.timesyncronize.syncclock.repository;
 
-import lombok.AllArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.jdbc.core.JdbcTemplate;
+import com.timesyncronize.syncclock.model.Clock;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Repository;
 
-import javax.sql.DataSource;
-import java.sql.SQLException;
+import java.time.LocalDateTime;
 
-@AllArgsConstructor
 @Repository
-public class ClockRepository {
-
-    @Autowired
-    private final JdbcTemplate jdbcTemplate;
-
-
+public interface ClockRepository extends CrudRepository<Clock, Long> {
+    @Query(value = "select now(3)", nativeQuery = true)
+    LocalDateTime now();
 }

@@ -13,4 +13,9 @@ public class PageController {
     public String index(){
         return "index";
     }
+
+    @GetMapping(path = "/double")
+    public String iframeDoubleScreen(){
+        return "iframeDoubleScreen";
+    }
 }
