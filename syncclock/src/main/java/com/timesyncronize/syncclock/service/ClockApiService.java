@@ -10,6 +10,7 @@ import java.sql.Timestamp;
 import java.text.ParseException;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.util.ArrayList;
 
 @AllArgsConstructor
 @Service
@@ -44,5 +45,32 @@ public class ClockApiService {
         System.out.println("WAS <-> DB 시간 차이: " + result);
 
         return result;
+    }
+
+    public ArrayList<Long> getSysdate(){
+
+        Long JavaBefore = System.currentTimeMillis();
+
+        // DB에서 현재시간 확인
+        LocalDateTime dbNow = clockRepository.now();
+
+        Long dbTimestamp = Timestamp.valueOf(dbNow).getTime();
+
+        Long sysdateRequestTime = ((dbTimestamp - JavaBefore) / 2);
+
+        ArrayList<Long> dbTimeAndQueryResTime = new ArrayList<>();
+        dbTimeAndQueryResTime.add(dbTimestamp);
+        dbTimeAndQueryResTime.add(sysdateRequestTime);
+        dbTimeAndQueryResTime.add(JavaBefore);
+
+        return dbTimeAndQueryResTime;
+    }
+
+    public Long justGetDbNow() {
+        LocalDateTime dbNow = clockRepository.now();
+        Long dbTimestamp = Timestamp.valueOf(dbNow).getTime();
+        System.out.println("dbTimestamp = " + dbTimestamp);
+
+        return dbTimestamp;
     }
 }
