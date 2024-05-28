@@ -45,7 +45,7 @@ window.onload = async () => {
             let resultTimestamp = kstTime + timeDifference;
 
             // 시계에 표출
-            playVideo(resultTimestamp, movie_box);
+            playVideo(resultTimestamp, movie_box, mediaName);
 
 
            satisfaction = false;
@@ -67,11 +67,10 @@ function getDbnow(){
 }
 
 // timestamp와 시계 블록을 인자로 주면 시간 표출 및 색깔 변화 Interval 주는 함수
-async function playVideo(timestamp, targetBlock){
+async function playVideo(timestamp, targetBlock, mediaName){
 
     // 다음 5분 단위에 재생이 시작되도록 설정
     let calcTimestampDate = new Date(timestamp);
-    console.log("targetBlock = " + targetBlock);
 
     // 현재 시간의 분, 초, 밀리초를 환산 변수에 저장
     let minuteConversion = (calcTimestampDate.getMinutes() % 5) * 60 * 1000;
@@ -90,19 +89,18 @@ async function playVideo(timestamp, targetBlock){
         console.log("해당 초가 지나서 재생됩니다.")
 
         // 바로 재생
-        playQue(targetBlock);
+        playQue(targetBlock, mediaName);
 
         // 5분마다 반복 실행 설정
         setInterval(() => {
-            playQue(targetBlock);
+            playQue(targetBlock, mediaName);
         }, fiveMinuteConversion);
 
     }, minuteIntervalTimer);
     // }, 10000);
 }
 
-function playQue(targetBlock){
-    targetBlock.muted = true;
-    targetBlock.load();
+function playQue(targetBlock, mediaName){
+    // targetBlock.muted = true;
     targetBlock.play();
 }
