@@ -10,12 +10,12 @@ window.onload = async () => {
     // 미디어 파일명을 쿼리스트링에 맞게 리턴받아서 video 태그 src값 기입
     let mediaName = getMediaFileName("view");
     videoBlock.src = mediaName;
-
-    let trash = await timeCheckForBrowserToDb();
+    videoBlock.style.objectFit = "fill"
 
     let resultTime = await timeCheckForBrowserToDb();
 
     playVideo(resultTime, videoBlock, mediaName);
+
 }
 
 // 브라우저 창에 맞게 targetBlock Node의 width, height 크기 변경
@@ -81,22 +81,18 @@ async function timeCheckForBrowserToDb(){
 async function playVideo(timestamp, targetBlock, mediaName){
 
     // 다음 5분 단위에 재생이 시작되도록 설정
-    let calcTimestampDate = new Date(timestamp);
-    console.log("calcTimestampDate.getTime() = " + calcTimestampDate.getTime());
-
-    // 현재 시간의 분, 초, 밀리초를 환산 변수에 저장
-    let minuteConversion = (calcTimestampDate.getMinutes() % 5) * 60 * 1000;
-    let secondConversion = calcTimestampDate.getSeconds() * 1000;
-    let millisecondsConversion = calcTimestampDate.getMilliseconds();
-    console.log("minuteConversion", minuteConversion);
-    console.log("secondConversion", secondConversion);
-    console.log("millisecondsConversion", millisecondsConversion);
+    let calcTimestamp = new Date(timestamp).getTime();
+    console.log("calcTimestamp = " + calcTimestamp);
 
     // 5분을 밀리초 단위로 변수 저장
     let fiveMinuteConversion = 5 * 60 * 1000;
+    console.log("fiveMinuteConversion = " + fiveMinuteConversion);
+
+    let remainingTime = calcTimestamp % fiveMinuteConversion;
+    console.log("remainingTime = " + remainingTime);
 
     // 몇 밀리초 후에 영화가 재생되는지 계산
-    let minuteIntervalTimer = fiveMinuteConversion - minuteConversion - secondConversion - millisecondsConversion;
+    let minuteIntervalTimer = fiveMinuteConversion - remainingTime;
     console.log(minuteIntervalTimer/1000 + "초 후에 영화가 재생됩니다.");
 
     setTimeout(() => {
