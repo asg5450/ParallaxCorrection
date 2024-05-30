@@ -1,13 +1,41 @@
 
+
+
 window.onload = async () => {
 
-    function searchParam(url, key){
-        return new URLSearchParams(url).get(key);
-    }
+    // 화면 첫 렌더링 시 브라우저 창 크기에 맞게 video full sizing
+    let videoBlock = document.getElementById("movie_box");
+    resizeForBrowserSize(videoBlock);
 
+    // 미디어 파일명을 쿼리스트링에 맞게 리턴받아서 video 태그 src값 기입
+    let mediaName = getMediaFileName("view");
+    videoBlock.src = mediaName;
+
+    let trash = await timeCheckForBrowserToDb();
+
+    let resultTime = await timeCheckForBrowserToDb();
+
+    playVideo(resultTime, videoBlock, mediaName);
+}
+
+// 브라우저 창에 맞게 targetBlock Node의 width, height 크기 변경
+function resizeForBrowserSize(targetBlock){
+    let currentWidth = window.innerWidth;
+    let currentHeight = window.innerHeight;
+    targetBlock.style.width = `${currentWidth}px`;
+    targetBlock.style.height = `${currentHeight}px`;
+}
+
+// 화면 크기 변경할 때마다 video 태그 full sizing
+window.onresize = () => {
+    let videoBlock = document.getElementById("movie_box");
+    resizeForBrowserSize(videoBlock);
+};
+
+// view 쿼리스트링값을 가지고 video파일에 넣을 src 값을 리턴
+function getMediaFileName(param){
     let strUrl = window.location.search;
-    const urlParams = new URLSearchParams(strUrl);
-    let viewNum = parseInt(searchParam(urlParams, "view"));
+    let viewNum = parseInt(new URLSearchParams(strUrl).get(param));
     let mediaName = "/media/";
     switch(viewNum){
         case 1:case 2:case 3:case 4:
@@ -16,44 +44,7 @@ window.onload = async () => {
         case 5:
             mediaName += "Interstellar_onlySound.mp3";
     }
-
-    const movie_box = document.getElementById("movie_box");
-    const movie_box_src = document.createAttribute("src");
-    movie_box_src.value = mediaName;
-    movie_box.setAttributeNode(movie_box_src);
-
-    let satisfaction = true;
-    do{
-        let browserBefore = new Date().getTime();
-        let dbNowTimestamp = await getDbnow();
-        let browserAfter = new Date().getTime();
-        let responseTime = (browserAfter - browserBefore) / 2;
-
-        // JS now를 찍고 DB now를 받아오는데 10ms 안에 이루어지면
-        if(responseTime <= 10){
-
-            // 시차 : DB now - JS before - 5ms
-            let timeDifference= dbNowTimestamp - browserBefore - 5;
-
-            // 브라우저 locale 시간
-            let localeTime = new Date();
-
-            // KST 시간으로 환산
-            let kstTime = localeTime.getTime() + localeTime.getTimezoneOffset() * 60 * 1000 + 9 * 60 * 60 * 1000;
-
-            // 브라우저 시간 + 시차
-            let resultTimestamp = kstTime + timeDifference;
-
-            // 시계에 표출
-            playVideo(resultTimestamp, movie_box, mediaName);
-
-
-           satisfaction = false;
-        }
-    }
-    while (satisfaction);
-
-
+    return mediaName;
 }
 
 // fetch 함수를 통해 DB SYSDATE를 JS로 받아오는 함수
@@ -66,27 +57,49 @@ function getDbnow(){
     }).then((response)=>response.json());
 }
 
+async function timeCheckForBrowserToDb(){
+    while (true){
+        let browserBefore = new Date().getTime();
+        let dbNowTimestamp = await getDbnow();
+        let browserAfter = new Date().getTime();
+        let responseTime = (browserAfter - browserBefore);
+
+        console.log("browserBefore", browserBefore);
+        console.log("browserAfter", browserAfter);
+        console.log("responseTime", responseTime);
+        console.log("return : dbNow", dbNowTimestamp);
+
+        // JS now를 찍고 DB now를 받아오는데 10ms 안에 이루어지면
+        if(responseTime <= 10){
+            // 루프 종료
+            return dbNowTimestamp;
+        }
+    }
+}
+
 // timestamp와 시계 블록을 인자로 주면 시간 표출 및 색깔 변화 Interval 주는 함수
 async function playVideo(timestamp, targetBlock, mediaName){
 
     // 다음 5분 단위에 재생이 시작되도록 설정
     let calcTimestampDate = new Date(timestamp);
+    console.log("calcTimestampDate.getTime() = " + calcTimestampDate.getTime());
 
     // 현재 시간의 분, 초, 밀리초를 환산 변수에 저장
     let minuteConversion = (calcTimestampDate.getMinutes() % 5) * 60 * 1000;
     let secondConversion = calcTimestampDate.getSeconds() * 1000;
-    let milliseconds = calcTimestampDate.getMilliseconds();
+    let millisecondsConversion = calcTimestampDate.getMilliseconds();
+    console.log("minuteConversion", minuteConversion);
+    console.log("secondConversion", secondConversion);
+    console.log("millisecondsConversion", millisecondsConversion);
 
     // 5분을 밀리초 단위로 변수 저장
     let fiveMinuteConversion = 5 * 60 * 1000;
 
     // 몇 밀리초 후에 영화가 재생되는지 계산
-    let minuteIntervalTimer = fiveMinuteConversion - minuteConversion - secondConversion - milliseconds;
+    let minuteIntervalTimer = fiveMinuteConversion - minuteConversion - secondConversion - millisecondsConversion;
     console.log(minuteIntervalTimer/1000 + "초 후에 영화가 재생됩니다.");
 
     setTimeout(() => {
-
-        console.log("해당 초가 지나서 재생됩니다.")
 
         // 바로 재생
         playQue(targetBlock, mediaName);

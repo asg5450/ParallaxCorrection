@@ -1,33 +1,9 @@
-/*
 
-#background_div{
-    height: 100vh;
+body {
+    margin: 0;
+    padding: 0;
 }
-#background_div.back_red{
-    background-color: red;
-}
-#background_div.back_orange{
-    background-color: orange;
-}
-#background_div.back_yellow{
-    background-color: yellow;
-}
-#background_div.back_green{
-    background-color: green;
-}
-#background_div.back_blue{
-    background-color: blue;
-}
-#background_div.back_darkblue{
-    background-color: darkblue;
-}
-
-*/
-
 
 #movie_box {
-    position: fixed; right: 0; bottom: 0;
-    min-width: 100%; min-height: 100%;
-    width: auto; height: auto; z-index: -100;
-    background-size: cover;
+    object-fit: fill;
 }
