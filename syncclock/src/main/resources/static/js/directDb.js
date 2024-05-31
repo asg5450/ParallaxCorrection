@@ -1,57 +1,22 @@
 
-
-
 window.onload = async () => {
 
     // 화면 첫 렌더링 시 브라우저 창 크기에 맞게 video full sizing
-    let colorPaper = document.getElementById("colorPaper");
-    resizeForBrowserSize(colorPaper);
+    let videoBlock = document.getElementById("movie_box");
+    resizeForBrowserSize(videoBlock);
 
-    colorPaper.style.objectFit = "fill";
+    // 미디어 파일명을 쿼리스트링에 맞게 리턴받아서 video 태그 src값 기입
+    let mediaName = getMediaFileName("view");
+    console.log(mediaName);
+    videoBlock.src = mediaName;
+    videoBlock.style.objectFit = "fill";
 
-    let dbTime = await timeCheckForBrowserToDb();
-    let oneMinuteConversion = 1 * 60 * 1000;
-    let delayTime = oneMinuteConversion - (dbTime % oneMinuteConversion);
-    console.log(delayTime/1000 + "초 후에 colorPrintTrigger 동작");
+    // 투명 상태에서 video태그 최초 play 리소스를 미리 소모하는 함수
+    // opacityZeroAndSampleStartAndStart(videoBlock);
 
-    colorPrintTrigger(delayTime);
+    let resultTime = await timeCheckForBrowserToDb();
 
-    // delayTime 후에 동작하는 setTimeout 트리거
-    function colorPrintTrigger(delayTime){
-        setTimeout(() => {
-
-            // delayTime 초 후에 바로 색깔변화 시작
-            colorPrintOneCycle();
-
-            // 30초 텀으로 Interval 생성
-            setInterval(() => {
-                colorPrintOneCycle();
-            }, 30000)
-        }, delayTime)
-    }
-
-    function colorPrintOneCycle(){
-        console.log("colorPrintOneCycle() 발동");
-        setTimeColorChanger("5000", "red", colorPaper)
-            .then((resolve) => setTimeColorChanger("5000", "orange", colorPaper))
-            .then((resolve) => setTimeColorChanger("5000", "yellow", colorPaper))
-            .then((resolve) => setTimeColorChanger("5000", "green", colorPaper))
-            .then((resolve) => setTimeColorChanger("5000", "blue", colorPaper))
-            .then((resolve) => setTimeColorChanger("5000", "darkblue", colorPaper))
-
-    }
-
-    function setTimeColorChanger(delay, color, targetElement){
-        return new Promise((resolve) => {
-            console.log("setTimeColorChanger  " + color + "  발동");
-            targetElement.style.backgroundColor = color;
-            setTimeout(() => {
-                resolve();
-            }, delay);
-        })
-    }
-
-
+    playVideo(resultTime, videoBlock, mediaName);
 
 }
 
@@ -65,8 +30,8 @@ function resizeForBrowserSize(targetBlock){
 
 // 화면 크기 변경할 때마다 video 태그 full sizing
 window.onresize = () => {
-    let colorPaper = document.getElementById("colorPaper");
-    resizeForBrowserSize(colorPaper);
+    let videoBlock = document.getElementById("movie_box");
+    resizeForBrowserSize(videoBlock);
 };
 
 // view 쿼리스트링값을 가지고 video파일에 넣을 src 값을 리턴
@@ -84,6 +49,26 @@ function getMediaFileName(param){
     return mediaName;
 }
 
+// 투명 상태에서 video태그 최초 play 리소스를 미리 소모하는 함수
+function opacityZeroAndSampleStartAndStart(element){
+    console.log("opacityZeroAndSamplePlaying 발동");
+    element.style.opacity = 0;
+    element.play();
+    new Promise((resolve) => {
+        setTimeout(() => {
+            element.pause();
+            resolve();
+        }, 500)
+    }).then((resolve) => {
+        element.currentTime = 0;
+        element.style.opacity = 1;
+    }).then((resolve) => {
+        setTimeout(() => {
+            element.play();
+        }, 1000)
+    })
+}
+
 // fetch 함수를 통해 DB SYSDATE를 JS로 받아오는 함수
 function getDbnow(){
     // return fetch("/syncclock-0.0.1-SNAPSHOT/clockRest/jsToDb", {
@@ -94,6 +79,7 @@ function getDbnow(){
     }).then((response)=>response.json());
 }
 
+// Browser <-> DB 왕복 통신 시간이 10ms 이하가 나올 때까지 무한 루프로 확인하는 함수
 async function timeCheckForBrowserToDb(){
     while (true){
         let browserBefore = new Date().getTime();
@@ -135,18 +121,18 @@ async function playVideo(timestamp, targetBlock, mediaName){
     setTimeout(() => {
 
         // 바로 재생
-        playQue(targetBlock, mediaName);
+        playQue(targetBlock);
 
         // 5분마다 반복 실행 설정
         setInterval(() => {
-            playQue(targetBlock, mediaName);
+            playQue(targetBlock);
         }, fiveMinuteConversion);
 
     }, minuteIntervalTimer);
     // }, 10000);
 }
 
-function playQue(targetBlock, mediaName){
+function playQue(targetBlock){
     // targetBlock.muted = true;
-    targetBlock.play();
+    opacityZeroAndSampleStartAndStart(targetBlock);
 }
