@@ -4,17 +4,54 @@
 window.onload = async () => {
 
     // 화면 첫 렌더링 시 브라우저 창 크기에 맞게 video full sizing
-    let videoBlock = document.getElementById("movie_box");
-    resizeForBrowserSize(videoBlock);
+    let colorPaper = document.getElementById("colorPaper");
+    resizeForBrowserSize(colorPaper);
 
-    // 미디어 파일명을 쿼리스트링에 맞게 리턴받아서 video 태그 src값 기입
-    let mediaName = getMediaFileName("view");
-    videoBlock.src = mediaName;
-    videoBlock.style.objectFit = "fill"
+    colorPaper.style.objectFit = "fill";
 
-    let resultTime = await timeCheckForBrowserToDb();
+    let dbTime = await timeCheckForBrowserToDb();
+    let oneMinuteConversion = 1 * 60 * 1000;
+    let delayTime = oneMinuteConversion - (dbTime % oneMinuteConversion);
+    console.log(delayTime/1000 + "초 후에 colorPrintTrigger 동작");
 
-    playVideo(resultTime, videoBlock, mediaName);
+    colorPrintTrigger(delayTime);
+
+    // delayTime 후에 동작하는 setTimeout 트리거
+    function colorPrintTrigger(delayTime){
+        setTimeout(() => {
+
+            // delayTime 초 후에 바로 색깔변화 시작
+            colorPrintOneCycle();
+
+            // 30초 텀으로 Interval 생성
+            setInterval(() => {
+                colorPrintOneCycle();
+            }, 30000)
+        }, delayTime)
+    }
+
+    function colorPrintOneCycle(){
+        console.log("colorPrintOneCycle() 발동");
+        setTimeColorChanger("5000", "red", colorPaper)
+            .then((resolve) => setTimeColorChanger("5000", "orange", colorPaper))
+            .then((resolve) => setTimeColorChanger("5000", "yellow", colorPaper))
+            .then((resolve) => setTimeColorChanger("5000", "green", colorPaper))
+            .then((resolve) => setTimeColorChanger("5000", "blue", colorPaper))
+            .then((resolve) => setTimeColorChanger("5000", "darkblue", colorPaper))
+
+    }
+
+    function setTimeColorChanger(delay, color, targetElement){
+        return new Promise((resolve) => {
+            console.log("setTimeColorChanger  " + color + "  발동");
+            targetElement.style.backgroundColor = color;
+            setTimeout(() => {
+                resolve();
+            }, delay);
+        })
+    }
+
+
 
 }
 
@@ -28,8 +65,8 @@ function resizeForBrowserSize(targetBlock){
 
 // 화면 크기 변경할 때마다 video 태그 full sizing
 window.onresize = () => {
-    let videoBlock = document.getElementById("movie_box");
-    resizeForBrowserSize(videoBlock);
+    let colorPaper = document.getElementById("colorPaper");
+    resizeForBrowserSize(colorPaper);
 };
 
 // view 쿼리스트링값을 가지고 video파일에 넣을 src 값을 리턴
